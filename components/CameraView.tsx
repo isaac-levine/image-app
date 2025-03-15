@@ -143,12 +143,23 @@ const CameraView = forwardRef<any, CameraViewProps>((props, ref) => {
           // Show captured image
           <Image source={{ uri: capturedImage }} style={styles.previewImage} />
         ) : (
-          // Show loading state
+          // Show loading state with a button to launch camera
           <View style={styles.loadingContainer}>
             <FontAwesome name="camera" size={40} color="#fff" />
             <Text style={styles.loadingText}>
-              {isCapturing ? "Opening camera..." : "Launching camera..."}
+              {isCapturing ? "Opening camera..." : "Camera ready"}
             </Text>
+
+            {/* Add a button to launch the camera if not currently capturing */}
+            {!isCapturing && (
+              <TouchableOpacity
+                style={styles.launchButton}
+                onPress={launchCamera}
+              >
+                <FontAwesome name="camera" size={24} color="white" />
+                <Text style={styles.launchButtonText}>Take Photo</Text>
+              </TouchableOpacity>
+            )}
           </View>
         )}
         {children}
@@ -201,6 +212,28 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     resizeMode: "cover",
+  },
+  launchButton: {
+    backgroundColor: "rgba(52, 152, 219, 0.8)",
+    paddingVertical: 15,
+    paddingHorizontal: 25,
+    borderRadius: 12,
+    marginTop: 30,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  launchButtonText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginLeft: 10,
   },
 });
 

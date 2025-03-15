@@ -124,10 +124,10 @@ export default function CameraScreen() {
       {/* Camera controls overlay */}
       {!capturedImage ? (
         <RNView style={styles.cameraControls}>
-          <TouchableOpacity style={styles.flipButton} onPress={toggleCamera}>
+          {/* <TouchableOpacity style={styles.flipButton} onPress={toggleCamera}>
             <FontAwesome name="refresh" size={24} color="white" />
             <Text style={styles.smallButtonText}>Flip</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </RNView>
       ) : (
         <RNView style={styles.actionButtons}>
