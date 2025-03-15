@@ -1,7 +1,8 @@
 import React, { forwardRef, useState, useEffect } from "react";
-import { StyleSheet, View, Text, Image, TouchableOpacity } from "react-native";
+import { StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import * as ImagePicker from "expo-image-picker";
+import { useRouter } from "expo-router";
 
 // Define the props for our camera component
 interface CameraViewProps {
@@ -15,8 +16,8 @@ interface CameraViewProps {
 const CameraView = forwardRef<any, CameraViewProps>((props, ref) => {
   const { style, type = 0, children, onCaptureComplete } = props;
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
-  const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
+  const router = useRouter();
 
   // Determine if front or back camera
   const isFrontCamera = type === 1;
@@ -27,23 +28,30 @@ const CameraView = forwardRef<any, CameraViewProps>((props, ref) => {
 
     setIsCapturing(true);
     try {
+      // Use ImagePicker to launch the camera
       const result = await ImagePicker.launchCameraAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         quality: 0.8,
+        // Important: Set both of these to true to bypass the confirmation screen
         allowsEditing: false,
-        cameraType: isFrontCamera
-          ? ImagePicker.CameraType.front
-          : ImagePicker.CameraType.back,
+        exif: false,
       });
 
       setIsCapturing(false);
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
         const uri = result.assets[0].uri;
-        setCapturedImage(uri);
+
+        // Navigate directly to editor with the image URI
         if (onCaptureComplete) {
           onCaptureComplete(uri);
         }
+
+        router.push({
+          pathname: "/editor",
+          params: { imageUri: uri },
+        });
+
         return { uri };
       }
     } catch (error) {
@@ -55,15 +63,21 @@ const CameraView = forwardRef<any, CameraViewProps>((props, ref) => {
         ? "https://picsum.photos/seed/selfie/500/800"
         : "https://picsum.photos/seed/landscape/500/800";
 
-      setCapturedImage(photoUri);
+      // Navigate to editor with the placeholder image
       if (onCaptureComplete) {
         onCaptureComplete(photoUri);
       }
+
+      router.push({
+        pathname: "/editor",
+        params: { imageUri: photoUri },
+      });
+
       return { uri: photoUri };
     }
   };
 
-  // Request camera permissions and launch camera on mount
+  // Request camera permissions on mount
   useEffect(() => {
     let isMounted = true;
 
@@ -74,16 +88,6 @@ const CameraView = forwardRef<any, CameraViewProps>((props, ref) => {
         if (!isMounted) return;
 
         setHasPermission(status === "granted");
-
-        // If permission granted, immediately open camera
-        if (status === "granted") {
-          // Small delay to ensure component is fully mounted
-          setTimeout(() => {
-            if (isMounted) {
-              launchCamera();
-            }
-          }, 300);
-        }
       } catch (err) {
         console.error("Error requesting camera permission:", err);
         if (isMounted) {
@@ -97,7 +101,7 @@ const CameraView = forwardRef<any, CameraViewProps>((props, ref) => {
     return () => {
       isMounted = false;
     };
-  }, [type]); // Re-run when camera type changes
+  }, []);
 
   // Expose methods through the ref
   React.useImperativeHandle(ref, () => ({
@@ -135,33 +139,27 @@ const CameraView = forwardRef<any, CameraViewProps>((props, ref) => {
     );
   }
 
-  // Show loading or captured image
+  // Show loading state with a button to launch camera
   return (
     <View style={[styles.container, style]}>
       <View style={styles.cameraView}>
-        {capturedImage ? (
-          // Show captured image
-          <Image source={{ uri: capturedImage }} style={styles.previewImage} />
-        ) : (
-          // Show loading state with a button to launch camera
-          <View style={styles.loadingContainer}>
-            <FontAwesome name="camera" size={40} color="#fff" />
-            <Text style={styles.loadingText}>
-              {isCapturing ? "Opening camera..." : "Camera ready"}
-            </Text>
+        <View style={styles.loadingContainer}>
+          <FontAwesome name="camera" size={40} color="#fff" />
+          <Text style={styles.loadingText}>
+            {isCapturing ? "Opening camera..." : "Camera ready"}
+          </Text>
 
-            {/* Add a button to launch the camera if not currently capturing */}
-            {!isCapturing && (
-              <TouchableOpacity
-                style={styles.launchButton}
-                onPress={launchCamera}
-              >
-                <FontAwesome name="camera" size={24} color="white" />
-                <Text style={styles.launchButtonText}>Take Photo</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
+          {/* Add a button to launch the camera if not currently capturing */}
+          {!isCapturing && (
+            <TouchableOpacity
+              style={styles.launchButton}
+              onPress={launchCamera}
+            >
+              <FontAwesome name="camera" size={24} color="white" />
+              <Text style={styles.launchButtonText}>Take Photo</Text>
+            </TouchableOpacity>
+          )}
+        </View>
         {children}
       </View>
     </View>
@@ -207,11 +205,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     textAlign: "center",
     marginTop: 8,
-  },
-  previewImage: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
   },
   launchButton: {
     backgroundColor: "rgba(52, 152, 219, 0.8)",

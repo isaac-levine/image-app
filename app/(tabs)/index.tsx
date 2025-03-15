@@ -120,31 +120,6 @@ export default function CameraScreen() {
         type={isFrontCamera ? CAMERA_FRONT : CAMERA_BACK}
         onCaptureComplete={handleImageCaptured}
       />
-
-      {/* Camera controls overlay */}
-      {!capturedImage ? (
-        <RNView style={styles.cameraControls}>
-          {/* <TouchableOpacity style={styles.flipButton} onPress={toggleCamera}>
-            <FontAwesome name="refresh" size={24} color="white" />
-            <Text style={styles.smallButtonText}>Flip</Text>
-          </TouchableOpacity> */}
-        </RNView>
-      ) : (
-        <RNView style={styles.actionButtons}>
-          <TouchableOpacity style={styles.actionButton} onPress={retakePicture}>
-            <FontAwesome name="refresh" size={24} color="white" />
-            <Text style={styles.buttonText}>Retake</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.actionButton, styles.usePhotoButton]}
-            onPress={goToEditor}
-          >
-            <FontAwesome name="check" size={24} color="white" />
-            <Text style={styles.buttonText}>Use Photo</Text>
-          </TouchableOpacity>
-        </RNView>
-      )}
     </View>
   );
 }

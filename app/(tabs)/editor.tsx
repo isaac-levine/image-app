@@ -217,8 +217,23 @@ export default function ImageEditorScreen() {
     }
   };
 
+  // Reset image to original (remove filter)
   const resetImage = () => {
+    if (processedImage && selectedImage) {
+      setProcessedImage(null);
+      // Keep the selectedImage intact, just remove the processed version
+    }
+  };
+
+  // Clear image completely (delete image)
+  const clearImage = () => {
+    setSelectedImage(null);
     setProcessedImage(null);
+    setCustomPrompt("");
+    lastImageUriRef.current = null;
+
+    // Optionally navigate back to camera
+    navigation.replace("/");
   };
 
   const closeErrorModal = () => {
@@ -303,6 +318,35 @@ export default function ImageEditorScreen() {
 
   const displayImage = processedImage || selectedImage;
 
+  const promptSection = (
+    <RNView style={styles.inputContainer}>
+      <TextInput
+        style={[
+          styles.customPromptInput,
+          keyboardVisible && styles.smallerInput,
+        ]}
+        placeholder="Describe how you want to modify your image (e.g., 'Make it look like a watercolor painting')"
+        value={customPrompt}
+        onChangeText={setCustomPrompt}
+        multiline
+        numberOfLines={keyboardVisible ? 2 : 3}
+        placeholderTextColor="#999"
+        editable={!isProcessing}
+      />
+      {customPrompt.length > 0 && (
+        <TouchableOpacity
+          style={styles.clearInputButton}
+          onPress={() => {
+            setCustomPrompt("");
+            dismissKeyboard();
+          }}
+        >
+          <FontAwesome name="times-circle" size={20} color="#999" />
+        </TouchableOpacity>
+      )}
+    </RNView>
+  );
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#000" }}>
       <KeyboardAvoidingView
@@ -371,36 +415,7 @@ export default function ImageEditorScreen() {
                     <Text style={styles.promptTitle}>
                       Describe how you want to modify your image:
                     </Text>
-                    <RNView style={styles.inputContainer}>
-                      <TextInput
-                        style={[
-                          styles.customPromptInput,
-                          keyboardVisible && styles.smallerInput,
-                        ]}
-                        placeholder="E.g., 'Make it look like a watercolor painting' or 'Add a sunset glow'"
-                        value={customPrompt}
-                        onChangeText={setCustomPrompt}
-                        multiline
-                        numberOfLines={keyboardVisible ? 2 : 3}
-                        placeholderTextColor="#999"
-                        editable={!isProcessing}
-                      />
-                      {customPrompt.length > 0 && (
-                        <TouchableOpacity
-                          style={styles.clearInputButton}
-                          onPress={() => {
-                            setCustomPrompt("");
-                            dismissKeyboard();
-                          }}
-                        >
-                          <FontAwesome
-                            name="times-circle"
-                            size={20}
-                            color="#999"
-                          />
-                        </TouchableOpacity>
-                      )}
-                    </RNView>
+                    {promptSection}
 
                     <TouchableOpacity
                       style={[
@@ -427,10 +442,10 @@ export default function ImageEditorScreen() {
 
                     <TouchableOpacity
                       style={[styles.actionButton, styles.clearButton]}
-                      onPress={() => setSelectedImage(null)}
+                      onPress={clearImage}
                     >
                       <FontAwesome name="trash" size={20} color="white" />
-                      <Text style={styles.buttonText}>Clear </Text>
+                      <Text style={styles.buttonText}>Clear</Text>
                     </TouchableOpacity>
 
                     {keyboardVisible && (
@@ -579,15 +594,15 @@ const styles = StyleSheet.create({
   imageWrapper: {
     position: "relative",
     width: "100%",
-    aspectRatio: 16 / 9,
-    marginVertical: 15,
-    borderRadius: 15,
+    height: SCREEN_HEIGHT * 0.7,
+    marginVertical: 5,
+    borderRadius: 12,
     overflow: "hidden",
   },
   image: {
     width: "100%",
     height: "100%",
-    borderRadius: 15,
+    borderRadius: 12,
   },
   viewFullScreenHint: {
     position: "absolute",
@@ -647,13 +662,11 @@ const styles = StyleSheet.create({
   },
   promptSection: {
     width: "100%",
-    marginTop: 5,
+    marginTop: 0,
+    paddingHorizontal: 10,
   },
   promptTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 10,
-    color: "#fff",
+    display: "none",
   },
   inputContainer: {
     position: "relative",
@@ -664,11 +677,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#444",
     borderRadius: 12,
-    padding: 15,
+    padding: 12,
     fontSize: 16,
     backgroundColor: "#222",
     color: "#fff",
-    minHeight: 80,
+    minHeight: 60,
     textAlignVertical: "top",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
@@ -689,10 +702,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 15,
+    paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 12,
-    marginTop: 12,
+    marginTop: 8,
     width: "100%",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
