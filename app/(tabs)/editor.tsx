@@ -20,7 +20,7 @@ import {
 import { Text, View } from "@/components/Themed";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import * as ImagePicker from "expo-image-picker";
-import { useLocalSearchParams, useNavigation } from "expo-router";
+import { useLocalSearchParams, useNavigation, useRouter } from "expo-router";
 import { applyImageEffect, GeminiError } from "../../services/geminiService";
 import * as MediaLibrary from "expo-media-library";
 import * as FileSystem from "expo-file-system";
@@ -42,6 +42,7 @@ export default function ImageEditorScreen() {
   const [isSaving, setIsSaving] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
   const navigation = useNavigation();
+  const router = useRouter();
   const lastImageUriRef = useRef<string | null>(null);
 
   // Set the image from params if available
@@ -232,8 +233,8 @@ export default function ImageEditorScreen() {
     setCustomPrompt("");
     lastImageUriRef.current = null;
 
-    // Optionally navigate back to camera
-    navigation.replace("/");
+    // Navigate back to camera tab
+    router.navigate("/(tabs)");
   };
 
   const closeErrorModal = () => {
@@ -412,9 +413,6 @@ export default function ImageEditorScreen() {
                   )}
 
                   <View style={styles.promptSection}>
-                    <Text style={styles.promptTitle}>
-                      Describe how you want to modify your image:
-                    </Text>
                     {promptSection}
 
                     <TouchableOpacity
@@ -589,12 +587,12 @@ const styles = StyleSheet.create({
   contentContainer: {
     width: "100%",
     alignItems: "center",
-    paddingHorizontal: 16,
+    paddingHorizontal: 10,
   },
   imageWrapper: {
     position: "relative",
     width: "100%",
-    height: SCREEN_HEIGHT * 0.7,
+    height: SCREEN_HEIGHT * 0.75,
     marginVertical: 5,
     borderRadius: 12,
     overflow: "hidden",
@@ -662,11 +660,8 @@ const styles = StyleSheet.create({
   },
   promptSection: {
     width: "100%",
-    marginTop: 0,
-    paddingHorizontal: 10,
-  },
-  promptTitle: {
-    display: "none",
+    marginTop: 5,
+    paddingHorizontal: 5,
   },
   inputContainer: {
     position: "relative",
